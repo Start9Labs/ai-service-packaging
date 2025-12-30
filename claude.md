@@ -42,7 +42,7 @@ my-service-startos/
 |-----|-------------|
 | `storeJson.read((s) => s).const(effects)` | Read config reactively (restarts service on change) |
 | `storeJson.read((s) => s).once()` | Read config once (no restart on change) |
-| `sdk.serviceInterface.getOwn(effects, 'ui').const()` | Get service hostnames for ALLOWED_HOSTS, CORS, etc. |
+| `sdk.serviceInterface.getOwn(effects, 'ui', mapper).const()` | Get service hostnames (with mapper to avoid unnecessary restarts) |
 | `writeFile('/media/startos/volumes/main/...', content)` | Write config files to volume |
 | `sdk.SubContainer.of(effects, {imageId}, mounts, name)` | Create container with volume mounts |
 | `sdk.Daemons.of(effects).addOneshot(...)` | One-time setup tasks (migrations, etc.) |

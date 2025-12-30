@@ -12,10 +12,13 @@ export const main = sdk.setupMain(async ({ effects }) => {
   const store = await storeJson.read((s) => s).const(effects)
 
   // 2. Get hostnames (for ALLOWED_HOSTS, CORS, etc.)
-  const uiInterface = await sdk.serviceInterface.getOwn(effects, 'ui').const()
-  if (!uiInterface) throw new Error('interfaces do not exist')
-  const hostnames = uiInterface.addressInfo?.format('hostname-info')
-  const allowedHosts = hostnames?.map((h) => h.hostname.value) ?? []
+  // Use mapper function to extract only the data you need - service only restarts if mapped data changes
+  const allowedHosts =
+    (await sdk.serviceInterface
+      .getOwn(effects, 'ui', (i) =>
+        i?.addressInfo?.format('hostname-info').map((h) => h.hostname.value),
+      )
+      .const()) || []
 
   // 3. Write config files to volume
   await writeFile(
@@ -74,6 +77,24 @@ const store = await storeJson.read((s) => s).const(effects)
 
 // One-time: read once, no restart on change
 const store = await storeJson.read((s) => s).once()
+```
+
+## Getting Hostnames with Mapper
+
+Use a mapper function to extract only the data you need. The service only restarts if the mapped result changes, not if other interface properties change:
+
+```typescript
+// With mapper - only restarts if hostnames change
+const allowedHosts =
+  (await sdk.serviceInterface
+    .getOwn(effects, 'ui', (i) =>
+      i?.addressInfo?.format('hostname-info').map((h) => h.hostname.value),
+    )
+    .const()) || []
+
+// Without mapper - restarts on any interface change (not recommended)
+const uiInterface = await sdk.serviceInterface.getOwn(effects, 'ui').const()
+const allowedHosts = uiInterface?.addressInfo?.format('hostname-info').map((h) => h.hostname.value) ?? []
 ```
 
 ## Oneshots

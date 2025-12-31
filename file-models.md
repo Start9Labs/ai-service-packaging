@@ -1,0 +1,180 @@
+# File Models
+
+File Models represent configuration files as TypeScript definitions, providing type safety and runtime enforcement throughout your codebase.
+
+## Supported Formats
+
+File Models support automatic parsing/serialization for:
+- `.json`
+- `.yaml` / `.yml`
+- `.toml`
+- `.ini`
+- `.env`
+
+Custom parser/serializer support is available for non-standard formats.
+
+## Creating a File Model
+
+### store.json.ts (Common Pattern)
+
+```typescript
+import { matches, FileHelper } from '@start9labs/start-sdk'
+import { sdk } from '../sdk'
+
+const { object, string, number, boolean } = matches
+
+const shape = object({
+  adminPassword: string.optional().onMismatch(undefined),
+  secretKey: string.optional().onMismatch(undefined),
+  someNumber: number.optional().onMismatch(0),
+  someFlag: boolean.optional().onMismatch(false),
+})
+
+export const storeJson = FileHelper.json(
+  { volumeId: 'main', subpath: 'store.json' },
+  shape,
+)
+```
+
+### YAML Configuration
+
+```typescript
+import { matches, FileHelper } from '@start9labs/start-sdk'
+
+const { object, string, array } = matches
+
+const shape = object({
+  server: object({
+    host: string,
+    port: number,
+  }),
+  features: array(string),
+})
+
+export const configYaml = FileHelper.yaml(
+  { volumeId: 'main', subpath: 'config.yaml' },
+  shape,
+)
+```
+
+## Reading File Models
+
+### Reading Methods
+
+| Method | Purpose |
+|--------|---------|
+| `.once()` | Read content once, no reactivity |
+| `.const(effects)` | Read content AND re-run context if changes occur |
+| `.onChange(effects)` | Register callback for value changes |
+| `.watch(effects)` | Create async iterator of new values |
+
+### Examples
+
+```typescript
+// One-time read (no restart on change)
+const store = await storeJson.read((s) => s).once()
+
+// Reactive read (service restarts if value changes)
+const store = await storeJson.read((s) => s).const(effects)
+
+// Read only specific fields (subset reading)
+const password = await storeJson.read((s) => s.adminPassword).once()
+
+// Reactive subset read
+const secretKey = await storeJson.read((s) => s.secretKey).const(effects)
+```
+
+### Subset Reading
+
+Use mapping to retrieve only specific fields rather than entire files:
+
+```typescript
+// Read only adminPassword - more efficient
+const password = await storeJson.read((s) => s.adminPassword).once()
+
+// Read nested values
+const serverHost = await configYaml.read((c) => c.server.host).once()
+```
+
+## Writing File Models
+
+### Full Write
+
+```typescript
+await storeJson.write(effects, {
+  adminPassword: 'secret123',
+  secretKey: 'abc123',
+  someNumber: 42,
+  someFlag: true,
+})
+```
+
+### Merge (Partial Update)
+
+```typescript
+// Only update specific fields, preserve others
+await storeJson.merge(effects, { someFlag: false })
+```
+
+## Type Coercion
+
+File Models provide runtime type coercion. For example, if a number is unexpectedly stored as a string, the validator can convert it back:
+
+```typescript
+const shape = object({
+  port: number.onMismatch((val) => {
+    // Convert string to number if needed
+    if (typeof val === 'string') return parseInt(val, 10)
+    return 8080 // default
+  }),
+})
+```
+
+## Common Patterns
+
+### Optional Fields with Defaults
+
+```typescript
+const shape = object({
+  // Optional with undefined default
+  apiKey: string.optional().onMismatch(undefined),
+
+  // Optional with value default
+  port: number.optional().onMismatch(8080),
+
+  // Required field
+  name: string,
+})
+```
+
+### Nested Objects
+
+```typescript
+const shape = object({
+  database: object({
+    host: string,
+    port: number,
+    name: string,
+  }),
+  smtp: object({
+    enabled: boolean,
+    server: string.optional().onMismatch(undefined),
+  }),
+})
+```
+
+### Using SDK Input Spec Validators
+
+For complex types like SMTP, use the SDK's built-in validators:
+
+```typescript
+import { sdk } from '../sdk'
+
+const shape = object({
+  adminPassword: string.optional().onMismatch(undefined),
+  smtp: sdk.inputSpecConstants.smtpInputSpec.validator.onMismatch({
+    selection: 'disabled',
+    value: {},
+  }),
+})
+```

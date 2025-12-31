@@ -64,13 +64,39 @@ export const main = sdk.setupMain(async ({ effects }) => {
 
 ## Reactive vs One-time Reads
 
+When reading configuration in `main.ts`, you choose how the system responds to changes:
+
+| Method | Returns | Behavior on Change |
+|--------|---------|-------------------|
+| `.once()` | Parsed content only | Nothing - value is stale |
+| `.const(effects)` | Parsed content | Re-runs the `setupMain` context, restarting daemons |
+
 ```typescript
-// Reactive: service restarts when value changes
+// Reactive: re-runs setupMain when value changes (restarts daemons)
 const store = await storeJson.read((s) => s).const(effects)
 
-// One-time: read once, no restart on change
+// One-time: read once, no re-run on change
 const store = await storeJson.read((s) => s).once()
 ```
+
+### Subset Reading
+
+Use a mapper function to read only specific fields. This is more efficient and limits reactivity to only the fields you care about:
+
+```typescript
+// Read entire store - re-runs if ANY field changes
+const store = await storeJson.read((s) => s).const(effects)
+
+// Read only secretKey - re-runs only if secretKey changes
+const secretKey = await storeJson.read((s) => s.secretKey).const(effects)
+```
+
+### Other Reading Methods
+
+| Method | Purpose |
+|--------|---------|
+| `.onChange(effects, callback)` | Register callback for value changes |
+| `.watch(effects)` | Create async iterator of new values |
 
 ## Getting Hostnames with Mapper
 

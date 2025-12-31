@@ -1,5 +1,18 @@
 # StartOS Service Packaging Guide
 
+## Getting Started
+
+1. [Environment Setup](./environment-setup.md) - Install required tools (Docker, Node.js, Start CLI, etc.)
+2. [Quick Start](./quick-start.md) - Create your first package from the Hello World template
+3. [Project Structure](./project-structure.md) - Understand the file layout and directory purposes
+
+## Detailed Documentation
+
+- [main.ts Patterns](./main-ts.md) - Daemons, oneshots, health checks, volume mounts
+- [interfaces.ts Patterns](./interfaces-ts.md) - Network interfaces and port bindings
+- [Actions](./actions.md) - User-triggered operations and SMTP configuration
+- [File Models](./file-models.md) - Type-safe configuration files and store.json
+
 Reference `hello-world-startos/` for boilerplate files (`package.json`, `tsconfig.json`, `Makefile`, `startos/` structure).
 
 ## Project Structure

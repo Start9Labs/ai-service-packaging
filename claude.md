@@ -19,10 +19,13 @@ my-service-startos/
 │   ├── init/               # Initialization logic
 │   ├── install/versions/   # Version management
 │   └── fileModels/         # Persistent state (store.json.ts)
+├── assets/                 # Additional files (required, can be empty)
+│   └── README.md
 ├── Dockerfile
 ├── Makefile
 ├── package.json
 ├── tsconfig.json
+├── LICENSE                 # Symlink to upstream license
 └── upstream-project/       # Git submodule (optional)
 ```
 
@@ -35,6 +38,11 @@ my-service-startos/
 - `images`: Docker images (pre-built tag or local build)
 - `alerts`: User notifications for install/update/uninstall
 
+**License**: Check the upstream project's LICENSE file and use the correct SPDX identifier (e.g., `MIT`, `Apache-2.0`, `GPL-3.0`). Create a symlink from your project root to the upstream license:
+```bash
+ln -sf upstream-project/LICENSE LICENSE
+```
+
 ### main.ts - Runtime Configuration
 **When**: Always - defines how the service runs.
 
@@ -43,8 +51,9 @@ my-service-startos/
 | `storeJson.read((s) => s).const(effects)` | Read config reactively (restarts service on change) |
 | `storeJson.read((s) => s).once()` | Read config once (no restart on change) |
 | `sdk.serviceInterface.getOwn(effects, 'ui', mapper).const()` | Get service hostnames (with mapper to avoid unnecessary restarts) |
-| `writeFile('/media/startos/volumes/main/...', content)` | Write config files to volume |
 | `sdk.SubContainer.of(effects, {imageId}, mounts, name)` | Create container with volume mounts |
+| `writeFile(\`${appSub.rootfs}/path\`, content)` | Write ephemeral config to subcontainer rootfs |
+| `writeFile('/media/startos/volumes/main/...', content)` | Write persistent files to volume |
 | `sdk.Daemons.of(effects).addOneshot(...)` | One-time setup tasks (migrations, etc.) |
 | `sdk.Daemons.of(effects).addDaemon(...)` | Long-running processes |
 | `sdk.healthCheck.checkPortListening(effects, port, msgs)` | Health check for daemon readiness |
@@ -92,10 +101,13 @@ See [actions.md](./actions.md) for action patterns.
 | `FileHelper.json({volumeId, subpath}, shape)` | JSON file with schema validation |
 | `matches.object({...})` | Define shape with `matches` |
 
-## Volume Paths
+## Writing Files
 
-- **Node.js (main.ts)**: `/media/startos/volumes/main/`
-- **Container mount**: Use `sdk.Mounts.of().mountVolume({volumeId, subpath, mountpoint, readonly})`
+- **Subcontainer rootfs** (`${appSub.rootfs}/path`): For ephemeral config regenerated on startup
+- **Volume** (`/media/startos/volumes/main/`): For persistent data that survives restarts
+- **Volume file mount**: Add `type: 'file'` when mounting a single file from a volume
+
+See [main.ts patterns](./main-ts.md) for details on rootfs vs volume mounts.
 
 ## Dockerfile
 
@@ -122,7 +134,9 @@ make install     # Install to local StartOS
 
 ## Checklist
 
-- [ ] `manifest.ts` configured
+- [ ] `manifest.ts` configured with correct license from upstream
+- [ ] `LICENSE` symlink to upstream license file
+- [ ] `assets/` directory exists (can be empty with README.md)
 - [ ] `Dockerfile` builds image
 - [ ] `main.ts` defines daemons/oneshots
 - [ ] `interfaces.ts` exposes network

@@ -34,19 +34,20 @@ my-service-startos/
 │   └── fileModels/         # Persistent state (store.json.ts)
 ├── assets/                 # Additional files (required, can be empty)
 │   └── README.md
-├── Dockerfile
+├── Dockerfile              # Optional - only if upstream doesn't have one
 ├── Makefile
 ├── package.json
 ├── tsconfig.json
+├── icon.*                  # Symlink to upstream or custom (svg preferred, max 40 KiB)
 ├── LICENSE                 # Symlink to upstream license
-└── upstream-project/       # Git submodule (optional)
+└── upstream-project/       # Git submodule
 ```
 
 ## APIs and When to Use Them
 
 ### manifest.ts
 **When**: Always - defines service identity and metadata.
-- `id`, `title`, `description`, `license`
+- `id`, `title`, `description`, `license`, `docsUrl` (all required)
 - `volumes`: Storage volumes (usually `['main']`)
 - `images`: Docker images (pre-built tag or local build)
 - `alerts`: User notifications for install/update/uninstall
@@ -54,6 +55,11 @@ my-service-startos/
 **License**: Check the upstream project's LICENSE file and use the correct SPDX identifier (e.g., `MIT`, `Apache-2.0`, `GPL-3.0`). Create a symlink from your project root to the upstream license:
 ```bash
 ln -sf upstream-project/LICENSE LICENSE
+```
+
+**Icon**: Symlink from upstream if available (svg, png, jpg, or webp):
+```bash
+ln -sf upstream-project/logo.svg icon.svg
 ```
 
 ### main.ts - Runtime Configuration
@@ -131,7 +137,20 @@ For upstream projects, use git submodules:
 git submodule add https://github.com/user/project.git upstream-project
 ```
 
-Then in Dockerfile:
+**If upstream has a working Dockerfile**: Just set `workdir` in the manifest to use it directly:
+```typescript
+images: {
+  main: {
+    source: {
+      dockerBuild: {
+        workdir: './upstream-project',
+      },
+    },
+  },
+},
+```
+
+**If you need a custom Dockerfile**: Create one in your project root:
 ```dockerfile
 COPY upstream-project/ .
 ```
@@ -147,14 +166,15 @@ make install     # Install to local StartOS
 
 ## Checklist
 
-- [ ] `manifest.ts` configured with correct license from upstream
+- [ ] `manifest.ts` configured with correct license and `docsUrl`
 - [ ] `LICENSE` symlink to upstream license file
+- [ ] `icon.*` symlink to upstream icon or custom (svg preferred, max 40 KiB)
 - [ ] `assets/` directory exists (can be empty with README.md)
-- [ ] `Dockerfile` builds image
+- [ ] Docker image configured (upstream Dockerfile via `workdir` or custom Dockerfile)
 - [ ] `main.ts` defines daemons/oneshots
 - [ ] `interfaces.ts` exposes network
-- [ ] `init/` generates secrets on install
-- [ ] `actions/` for user operations
-- [ ] `fileModels/store.json.ts` for state
+- [ ] `init/` generates secrets on install (if needed)
+- [ ] `actions/` for user operations (if needed)
+- [ ] `fileModels/store.json.ts` for state (if needed)
 - [ ] `npm run check` passes
 - [ ] `make` succeeds

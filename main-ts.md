@@ -133,50 +133,7 @@ Tasks that run on every startup before daemons. Use for idempotent operations li
 })
 ```
 
-**Important**: Do NOT put one-time setup tasks (like `createsuperuser`) in main.ts oneshots - they run on every startup and will fail on subsequent runs. Use `init/initializeService.ts` instead.
-
-## One-time Setup (Install Only)
-
-For tasks that should only run once during install (creating users, initial data), use `init/initializeService.ts`:
-
-```typescript
-// init/initializeService.ts
-export const initializeService = sdk.setupOnInit(async (effects, kind) => {
-  if (kind !== 'install') return
-
-  const adminPassword = getRandomPassword()
-  await storeJson.write(effects, { adminPassword })
-
-  const appSub = await getAppSub(effects)
-
-  // Write initial config
-  await writeFile(`${appSub.rootfs}/app/config.py`, generateConfig({ ... }))
-
-  // Run one-time setup tasks
-  await sdk.Daemons.of(effects)
-    .addOneshot('migrate', {
-      subcontainer: appSub,
-      exec: { command: ['python', 'manage.py', 'migrate', '--noinput'] },
-      requires: [],
-    })
-    .addOneshot('create-superuser', {
-      subcontainer: appSub,
-      exec: {
-        command: ['python', 'manage.py', 'createsuperuser', '--noinput'],
-        env: {
-          DJANGO_SUPERUSER_USERNAME: 'admin',
-          DJANGO_SUPERUSER_PASSWORD: adminPassword,
-        },
-      },
-      requires: ['migrate'],
-    })
-    .runUntilSuccess(120_000)  // Run and wait for completion
-
-  await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
-    reason: 'Retrieve the admin password',
-  })
-})
-```
+**Important**: Do NOT put one-time setup tasks (like `createsuperuser`) in main.ts oneshots - they run on every startup and will fail on subsequent runs. Use `init/initializeService.ts` instead. See [Initialization Patterns](./init.md) for details.
 
 ## Environment Variables
 

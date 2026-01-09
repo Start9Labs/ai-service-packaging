@@ -9,6 +9,7 @@
 ## Detailed Documentation
 
 - [main.ts Patterns](./main-ts.md) - Daemons, oneshots, health checks, volume mounts
+- [Initialization Patterns](./init.md) - One-time setup, runUntilSuccess, bootstrapping via API
 - [interfaces.ts Patterns](./interfaces-ts.md) - Network interfaces and port bindings
 - [Actions](./actions.md) - User-triggered operations and SMTP configuration
 - [File Models](./file-models.md) - Type-safe configuration files and store.json
@@ -103,7 +104,7 @@ See [interfaces.ts patterns](./interfaces-ts.md) for multiple interfaces.
 See [actions.md](./actions.md) for action patterns.
 
 ### init/initializeService.ts
-**When**: Need one-time setup on install (generate secrets, create tasks).
+**When**: Need one-time setup on install (generate secrets, bootstrap via API, create tasks).
 
 | API | When to Use |
 |-----|-------------|
@@ -111,6 +112,9 @@ See [actions.md](./actions.md) for action patterns.
 | `storeJson.write(effects, {...})` | Persist initial state |
 | `sdk.action.createOwnTask(effects, action, priority, {reason})` | Prompt user to run action |
 | `utils.getDefaultString({charset, len})` | Generate random strings |
+| `.runUntilSuccess(timeout)` | Run daemons/oneshots and wait for completion |
+
+See [Initialization Patterns](./init.md) for `runUntilSuccess` and bootstrapping via API.
 
 ### fileModels/store.json.ts
 **When**: Need to persist service state (passwords, secrets, settings).
@@ -137,13 +141,27 @@ For upstream projects, use git submodules:
 git submodule add https://github.com/user/project.git upstream-project
 ```
 
-**If upstream has a working Dockerfile**: Just set `workdir` in the manifest to use it directly:
+**If upstream has a working Dockerfile**: Set `workdir` to the upstream directory. If the Dockerfile is named `Dockerfile`, you can omit the `dockerfile` field:
 ```typescript
 images: {
   main: {
     source: {
       dockerBuild: {
         workdir: './upstream-project',
+      },
+    },
+  },
+},
+```
+
+For a non-standard Dockerfile name, specify `dockerfile` relative to project root:
+```typescript
+images: {
+  main: {
+    source: {
+      dockerBuild: {
+        workdir: './upstream-project',
+        dockerfile: './upstream-project/sync-server.Dockerfile',  // relative to project root
       },
     },
   },

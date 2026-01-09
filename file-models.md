@@ -163,6 +163,35 @@ const shape = object({
 })
 ```
 
+### Hardcoded Literal Values
+
+For values that should always be a specific literal and never change (e.g., internal ports, paths, auth modes), use `literal().onMismatch()`:
+
+```typescript
+import { matches, FileHelper } from '@start9labs/start-sdk'
+
+const { object, string, literal } = matches
+
+const port = 8080
+const dataDir = '/data'
+
+const shape = object({
+  // These values are hardcoded and will be corrected on the next merge
+  port: literal(port).onMismatch(port),
+  dataDir: literal(dataDir).onMismatch(dataDir),
+  auth: literal('password').onMismatch('password'),
+  tls: literal(false).onMismatch(false),
+
+  // This value can vary
+  password: string.optional().onMismatch(undefined),
+})
+```
+
+This pattern ensures:
+- The value is validated to match the literal exactly
+- If the file ends up with a different value (e.g., user edits it manually), it's corrected on the next `merge()`
+- You can use `merge()` to update only the non-literal fields without specifying the hardcoded ones
+
 ### Using SDK Input Spec Validators
 
 For complex types like SMTP, use the SDK's built-in validators:

@@ -41,6 +41,7 @@ my-service-startos/
 ### Boilerplate Files
 
 These files typically require minimal modification:
+
 - `.gitignore`
 - `Makefile`
 - `package.json` / `package-lock.json`
@@ -52,7 +53,7 @@ The service's visual identifier. Maximum size is 40 KiB. Accepts `.svg`, `.png`,
 
 ### LICENSE
 
-The package's software license, typically matching the upstream service's license. Create a symlink:
+The package's software license, ALWAYS matching the upstream service's license. Create a symlink:
 
 ```bash
 ln -sf upstream-project/LICENSE LICENSE
@@ -80,29 +81,30 @@ The primary development directory containing SDK integration files and package l
 
 ### Core TypeScript Modules
 
-| File | Purpose |
-|------|---------|
-| `manifest.ts` | Static service metadata (ID, name, description, requirements, images) |
-| `main.ts` | Daemon runtime configuration and health checks |
-| `interfaces.ts` | Network interface definitions and port bindings |
-| `backups.ts` | Backup volumes and exclusion patterns |
-| `dependencies.ts` | Service dependencies and version requirements |
-| `sdk.ts` | SDK initialization (boilerplate) |
-| `utils.ts` | Package-specific constants and helper functions |
-| `index.ts` | Module exports (boilerplate) |
+| File              | Purpose                                                               |
+| ----------------- | --------------------------------------------------------------------- |
+| `manifest.ts`     | Static service metadata (ID, name, description, requirements, images) |
+| `main.ts`         | Daemon runtime configuration and health checks                        |
+| `interfaces.ts`   | Network interface definitions and port bindings                       |
+| `backups.ts`      | Backup volumes and exclusion patterns                                 |
+| `dependencies.ts` | Service dependencies and version requirements                         |
+| `sdk.ts`          | SDK initialization (boilerplate)                                      |
+| `utils.ts`        | Package-specific constants and helper functions                       |
+| `index.ts`        | Module exports (boilerplate)                                          |
 
 ### Subdirectories
 
-| Directory | Purpose |
-|-----------|---------|
-| `actions/` | Custom user-facing scripts displayed as buttons in the UI |
+| Directory     | Purpose                                                               |
+| ------------- | --------------------------------------------------------------------- |
+| `actions/`    | Custom user-facing scripts displayed as buttons in the UI             |
 | `fileModels/` | Type-safe representations of config files (.json, .yaml, .toml, etc.) |
-| `init/` | Container initialization logic (install, update, restart) |
-| `install/` | Version management and migration logic |
+| `init/`       | Container initialization logic (install, update, restart)             |
+| `install/`    | Version management and migration logic                                |
 
 ## Initialization Triggers
 
 Service containers initialize in these scenarios:
+
 - Fresh installation
 - Service updates or downgrades
 - StartOS system boot

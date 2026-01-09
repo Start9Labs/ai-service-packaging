@@ -8,6 +8,8 @@
 
 ## Detailed Documentation
 
+- [manifest.ts](./manifest-ts.md) - Service metadata, images, alerts, dependencies
+- [Versioning](./versions.md) - ExVer format, version selection, migrations
 - [main.ts Patterns](./main-ts.md) - Daemons, oneshots, health checks, volume mounts
 - [Initialization Patterns](./init.md) - One-time setup, runUntilSuccess, bootstrapping via API
 - [interfaces.ts Patterns](./interfaces-ts.md) - Network interfaces and port bindings
@@ -41,6 +43,7 @@ my-service-startos/
 ├── tsconfig.json
 ├── icon.*                  # Symlink to upstream or custom (svg preferred, max 40 KiB)
 ├── LICENSE                 # Symlink to upstream license
+├── .gitignore              # Ignore build artifacts, node_modules, etc.
 └── upstream-project/       # Git submodule
 ```
 
@@ -48,20 +51,16 @@ my-service-startos/
 
 ### manifest.ts
 **When**: Always - defines service identity and metadata.
-- `id`, `title`, `description`, `license`, `docsUrl` (all required)
-- `volumes`: Storage volumes (usually `['main']`)
-- `images`: Docker images (pre-built tag or local build)
-- `alerts`: User notifications for install/update/uninstall
 
-**License**: Check the upstream project's LICENSE file and use the correct SPDX identifier (e.g., `MIT`, `Apache-2.0`, `GPL-3.0`). Create a symlink from your project root to the upstream license:
-```bash
-ln -sf upstream-project/LICENSE LICENSE
-```
+| Field | Description |
+|-------|-------------|
+| `id`, `title`, `license`, `docsUrl` | Required metadata |
+| `volumes` | Storage volumes (usually `['main']`) |
+| `images` | Docker images (pre-built tag or local build) |
+| `alerts` | User notifications for install/update/uninstall |
+| `dependencies` | Service dependencies |
 
-**Icon**: Symlink from upstream if available (svg, png, jpg, or webp):
-```bash
-ln -sf upstream-project/logo.svg icon.svg
-```
+See [manifest.ts](./manifest-ts.md) for detailed configuration (images, alerts, dependencies, license/icon setup).
 
 ### main.ts - Runtime Configuration
 **When**: Always - defines how the service runs.
@@ -72,6 +71,8 @@ ln -sf upstream-project/logo.svg icon.svg
 | `storeJson.read((s) => s).once()` | Read config once (no restart on change) |
 | `sdk.serviceInterface.getOwn(effects, 'ui', mapper).const()` | Get service hostnames (with mapper to avoid unnecessary restarts) |
 | `sdk.SubContainer.of(effects, {imageId}, mounts, name)` | Create container with volume mounts |
+| `sdk.useEntrypoint()` | Use upstream image's ENTRYPOINT/CMD (prefer over custom command) |
+| `sdk.useEntrypoint([args])` | Use upstream ENTRYPOINT with custom CMD arguments |
 | `writeFile(\`${appSub.rootfs}/path\`, content)` | Write ephemeral config to subcontainer rootfs |
 | `writeFile('/media/startos/volumes/main/...', content)` | Write persistent files to volume |
 | `sdk.Daemons.of(effects).addOneshot(...)` | One-time setup tasks (migrations, etc.) |
@@ -134,44 +135,12 @@ See [main.ts patterns](./main-ts.md) for details on rootfs vs volume mounts.
 
 ## Dockerfile
 
-No `ENTRYPOINT` or `CMD` needed - StartOS controls execution via `main.ts`.
-
 For upstream projects, use git submodules:
 ```bash
 git submodule add https://github.com/user/project.git upstream-project
 ```
 
-**If upstream has a working Dockerfile**: Set `workdir` to the upstream directory. If the Dockerfile is named `Dockerfile`, you can omit the `dockerfile` field:
-```typescript
-images: {
-  main: {
-    source: {
-      dockerBuild: {
-        workdir: './upstream-project',
-      },
-    },
-  },
-},
-```
-
-For a non-standard Dockerfile name, specify `dockerfile` relative to project root:
-```typescript
-images: {
-  main: {
-    source: {
-      dockerBuild: {
-        workdir: './upstream-project',
-        dockerfile: './upstream-project/sync-server.Dockerfile',  // relative to project root
-      },
-    },
-  },
-},
-```
-
-**If you need a custom Dockerfile**: Create one in your project root:
-```dockerfile
-COPY upstream-project/ .
-```
+See [manifest.ts](./manifest-ts.md) for Docker image configuration (`dockerTag` vs `dockerBuild`).
 
 ## Build Commands
 
@@ -184,6 +153,7 @@ make install     # Install to local StartOS
 
 ## Checklist
 
+- [ ] `.gitignore` copied from `hello-world-startos/.gitignore` (boilerplate)
 - [ ] `manifest.ts` configured with correct license and `docsUrl`
 - [ ] `LICENSE` symlink to upstream license file
 - [ ] `icon.*` symlink to upstream icon or custom (svg preferred, max 40 KiB)

@@ -135,13 +135,60 @@ Tasks that run on every startup before daemons. Use for idempotent operations li
 
 **Important**: Do NOT put one-time setup tasks (like `createsuperuser`) in main.ts oneshots - they run on every startup and will fail on subsequent runs. Use `init/initializeService.ts` instead. See [Initialization Patterns](./init.md) for details.
 
+## Exec Command
+
+### Using Upstream Entrypoint
+
+If the upstream Docker image has a compatible `ENTRYPOINT`/`CMD`, use `sdk.useEntrypoint()` instead of specifying a custom command. This is the simplest approach and ensures compatibility with the upstream image:
+
+```typescript
+.addDaemon('primary', {
+  subcontainer: appSub,
+  exec: {
+    command: sdk.useEntrypoint(),
+  },
+  // ...
+})
+```
+
+You can pass an array of arguments to override the image's `CMD` while keeping the `ENTRYPOINT`:
+
+```typescript
+.addDaemon('postgres', {
+  subcontainer: postgresSub,
+  exec: {
+    command: sdk.useEntrypoint(['-c', 'random_page_cost=1.0']),
+  },
+  // ...
+})
+```
+
+**When to use `sdk.useEntrypoint()`:**
+- Upstream image has a working entrypoint that starts the service correctly
+- You want to use the entrypoint but optionally override CMD arguments
+- Examples: Ollama, Jellyfin, Vaultwarden, Postgres
+
+### Custom Command
+
+Use a custom command array when you need to bypass the entrypoint entirely:
+
+```typescript
+.addDaemon('primary', {
+  subcontainer: appSub,
+  exec: {
+    command: ['/opt/app/bin/start.sh', '--port=' + uiPort],
+  },
+  // ...
+})
+```
+
 ## Environment Variables
 
 ```typescript
 .addDaemon('main', {
   subcontainer: appSub,
   exec: {
-    command: ['./start.sh'],
+    command: sdk.useEntrypoint(),  // or custom command
     env: {
       DATABASE_URL: 'sqlite:///data/db.sqlite3',
       SECRET_KEY: store?.secretKey ?? '',

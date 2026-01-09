@@ -2,11 +2,69 @@
 
 ## Overview
 
-Use `init/initializeService.ts` for one-time setup tasks that should only run during install (not on every startup). This is the place for:
-- Generating passwords/secrets
-- Creating admin users
-- Initial database setup
-- Bootstrapping services that require API calls
+`setupOnInit` runs during container initialization. The `kind` parameter indicates why init is running:
+
+| Kind | When | Use For |
+|------|------|---------|
+| `'install'` | Fresh install | Generate passwords, create admin users, bootstrap via API |
+| `'restore'` | Restoring from backup | Re-register triggers, skip password generation |
+| `null` | Container rebuild, server restart | Register long-lived triggers (e.g., `.const()` watchers) |
+
+## Init Kinds
+
+### Install Only
+
+For one-time setup that generates new state:
+
+```typescript
+export const initializeService = sdk.setupOnInit(async (effects, kind) => {
+  if (kind !== 'install') return
+
+  // Generate password, bootstrap server, etc.
+  const adminPassword = utils.getDefaultString({
+    charset: 'a-z,A-Z,0-9',
+    len: 22,
+  })
+  await storeJson.write(effects, { adminPassword })
+})
+```
+
+### Restore
+
+For setup that should also run when restoring from backup (but not on container rebuild):
+
+```typescript
+export const initializeService = sdk.setupOnInit(async (effects, kind) => {
+  if (kind === null) return  // Skip on container rebuild
+
+  // Runs on both install and restore
+  await sdk.action.createOwnTask(effects, getAdminPassword, 'critical', {
+    reason: 'Retrieve the admin password',
+  })
+})
+```
+
+### Always (Container Lifetime)
+
+For registering `.const()` triggers that need to persist for the container's lifetime. These re-register on container rebuild:
+
+```typescript
+export const initializeService = sdk.setupOnInit(async (effects, kind) => {
+  // Runs on install, restore, AND container rebuild
+
+  // Register a watcher that lives for the container lifetime
+  someConfig.read((c) => c.setting).const(effects)
+
+  // Install-specific setup
+  if (kind === 'install') {
+    const adminPassword = utils.getDefaultString({
+      charset: 'a-z,A-Z,0-9',
+      len: 22,
+    })
+    await storeJson.write(effects, { adminPassword })
+  }
+})
+```
 
 ## Basic Structure
 
@@ -196,12 +254,22 @@ await sdk.action.createOwnTask(effects, getAdminPassword, 'critical', {
 
 Priority levels: `'critical'`, `'high'`, `'medium'`, `'low'`
 
-### Check Install vs Restore
+### Checking Init Kind
 
 ```typescript
 export const initializeService = sdk.setupOnInit(async (effects, kind) => {
-  if (kind !== 'install') return  // Skip on restore
+  // kind === 'install': Fresh install
+  // kind === 'restore': Restoring from backup
+  // kind === null: Container rebuild / server restart
 
-  // ... install-only setup
+  if (kind === 'install') {
+    // Generate new passwords, bootstrap server
+  }
+
+  if (kind !== null) {
+    // Runs on install OR restore (skip container rebuild)
+  }
+
+  // No check: runs on ALL init types (install, restore, container rebuild)
 })
 ```

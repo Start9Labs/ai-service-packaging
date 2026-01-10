@@ -262,6 +262,42 @@ await writeFile(
 - **Volume mount (directory)**: Persistent data that survives restarts (databases, user files)
 - **Volume mount (file)**: Persistent config that users might edit (requires `type: 'file'`)
 
+## Executing Commands in SubContainers
+
+Use `exec` or `execFail` to run commands in a subcontainer:
+
+| Method | Behavior on Non-zero Exit |
+|--------|---------------------------|
+| `exec()` | Returns result with `exitCode`, `stdout`, `stderr` - does NOT throw |
+| `execFail()` | Throws an error on non-zero exit code |
+
+```typescript
+// exec() - manual error handling (good for optional/warning cases)
+const result = await appSub.exec(['update-ca-certificates'], { user: 'root' })
+if (result.exitCode !== 0) {
+  console.warn('Failed to update CA certificates:', result.stderr)
+}
+
+// execFail() - throws on error (good for required commands)
+// Uses the default user from the Dockerfile (no need to specify { user: '...' })
+await appSub.execFail(['git', 'clone', 'https://github.com/user/repo.git'])
+
+// Override user when needed (e.g., run as root)
+await appSub.exec(['update-ca-certificates'], { user: 'root' })
+```
+
+**User option**: The `user` option is optional. If omitted, commands run as the default user defined in the Dockerfile (`USER` directive). Only specify `{ user: 'root' }` when you need elevated privileges.
+
+**Use `execFail()` when:**
+- The command must succeed for the service to work correctly
+- You're in `initializeService.ts` and want installation to fail if setup fails
+- You want automatic error propagation
+
+**Use `exec()` when:**
+- The command failure is not critical (warnings, optional setup)
+- You need to inspect the exit code or output regardless of success/failure
+- You want custom error handling logic
+
 ## Config File Generation
 
 ```typescript

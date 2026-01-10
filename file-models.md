@@ -68,11 +68,16 @@ export const configYaml = FileHelper.yaml(
 | `.onChange(effects)` | Register callback for value changes |
 | `.watch(effects)` | Create async iterator of new values |
 
+**Important**: All read methods return `null` if the file doesn't exist. Do NOT use try-catch for missing files.
+
 ### Examples
 
 ```typescript
-// One-time read (no restart on change)
+// One-time read (no restart on change) - returns null if file doesn't exist
 const store = await storeJson.read((s) => s).once()
+
+// Handle missing file with nullish coalescing
+const keys = (await authorizedKeysFile.read().once()) ?? []
 
 // Reactive read (service restarts if value changes)
 const store = await storeJson.read((s) => s).const(effects)

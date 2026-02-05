@@ -20,10 +20,10 @@ When you run Claude Code in a directory that references this repo's `CLAUDE.md`,
    git clone https://github.com/Start9Labs/service-packaging.git ai-service-packaging
    ```
 
-3. Create a `CLAUDE.md` in your services directory:
+3. Copy the root `CLAUDE.md` into your services directory:
 
    ```sh
-   echo 'read ai-service-packaging/CLAUDE.md' > CLAUDE.md
+   cp ai-service-packaging/ROOT_CLAUDE.md CLAUDE.md
    ```
 
 4. Run Claude Code and say hi:

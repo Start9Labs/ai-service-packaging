@@ -267,6 +267,8 @@ chore(hello-world): bump SDK to 0.4.0-beta.48
 
 ## Supplementary Files
 
+These files live at the **session root** (the directory where Claude is launched, i.e. the parent directory that contains this repo), not inside this repo:
+
 - `TODO.md` - Pending tasks for AI agents (check this first, remove items when completed)
 - `USER.md` - Current user identifier (gitignored, varies per developer)
 
@@ -274,9 +276,9 @@ chore(hello-world): bump SDK to 0.4.0-beta.48
 
 On startup:
 
-1. **Check for `USER.md`** - If it doesn't exist, prompt the user for their name/identifier and create it. This file is gitignored since it varies per developer.
+1. **Check for `USER.md` at the session root** - If it doesn't exist, prompt the user for their name/identifier and create it there. This file is gitignored since it varies per developer.
 
-2. **Check `TODO.md` for relevant tasks** - Show TODOs that either:
+2. **Check `TODO.md` at the session root for relevant tasks** - Show TODOs that either:
    - Have no `@username` tag (relevant to everyone)
    - Are tagged with the current user's identifier
 

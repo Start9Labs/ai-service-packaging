@@ -28,7 +28,8 @@ my-service-startos/
 ├── Dockerfile              # Optional - for custom images
 ├── icon.svg                # Service icon (max 40 KiB)
 ├── LICENSE                 # Package license (symlink to upstream)
-├── Makefile
+├── Makefile                # Project config (includes s9pk.mk)
+├── s9pk.mk                 # Shared build logic (boilerplate)
 ├── package.json
 ├── package-lock.json
 ├── README.md
@@ -43,7 +44,8 @@ my-service-startos/
 These files typically require minimal modification:
 
 - `.gitignore`
-- `Makefile`
+- `Makefile` - Just includes `s9pk.mk` (see [Makefile](./makefile.md))
+- `s9pk.mk` - Shared build logic, copy from template without modification
 - `package.json` / `package-lock.json`
 - `tsconfig.json`
 

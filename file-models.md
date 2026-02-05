@@ -31,7 +31,7 @@ const shape = object({
 })
 
 export const storeJson = FileHelper.json(
-  { volumeId: 'main', subpath: 'store.json' },
+  { base: sdk.volumes.main, subpath: 'store.json' },
   shape,
 )
 ```
@@ -40,6 +40,7 @@ export const storeJson = FileHelper.json(
 
 ```typescript
 import { matches, FileHelper } from '@start9labs/start-sdk'
+import { sdk } from '../sdk'
 
 const { object, string, array } = matches
 
@@ -52,7 +53,7 @@ const shape = object({
 })
 
 export const configYaml = FileHelper.yaml(
-  { volumeId: 'main', subpath: 'config.yaml' },
+  { base: sdk.volumes.main, subpath: 'config.yaml' },
   shape,
 )
 ```

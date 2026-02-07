@@ -17,6 +17,7 @@
 - [File Models](./file-models.md) - Type-safe configuration files and store.json
 - [Cross-Service Dependencies](./cross-service-dependencies.md) - Dependency tasks, interface reading, volume mounting
 - [Makefile](./makefile.md) - Build system with s9pk.mk
+- [Writing READMEs](./writing-readmes.md) - README structure, AI prompt, and pre-publish checklist
 
 Reference `hello-world-startos/` for boilerplate files (`package.json`, `tsconfig.json`, `Makefile`, `s9pk.mk`, `startos/` structure).
 

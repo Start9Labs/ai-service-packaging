@@ -8,7 +8,7 @@
 
 ## Detailed Documentation
 
-- [manifest.ts](./manifest-ts.md) - Service metadata, images, alerts, dependencies
+- [manifest/](./manifest-ts.md) - Service metadata, images, alerts, dependencies (with i18n)
 - [Versioning](./versions.md) - ExVer format, version selection, migrations
 - [main.ts Patterns](./main-ts.md) - Daemons, oneshots, health checks, volume mounts
 - [Initialization Patterns](./init.md) - One-time setup, runUntilSuccess, bootstrapping via API
@@ -26,7 +26,14 @@ Reference `hello-world-startos/` for boilerplate files (`package.json`, `tsconfi
 ```
 my-service-startos/
 ├── startos/
-│   ├── manifest.ts         # Service metadata
+│   ├── manifest/           # Service metadata
+│   │   ├── index.ts        # setupManifest() call
+│   │   └── i18n.ts         # Translated description, alerts
+│   ├── i18n/               # Internationalization
+│   │   ├── index.ts        # setupI18n() call (boilerplate)
+│   │   └── dictionaries/
+│   │       ├── default.ts  # English strings keyed by index
+│   │       └── translations.ts  # Translations for other locales
 │   ├── sdk.ts              # SDK init (boilerplate)
 │   ├── index.ts            # Exports (boilerplate)
 │   ├── main.ts             # Runtime: daemons, oneshots, health checks
@@ -53,7 +60,7 @@ my-service-startos/
 
 ## APIs and When to Use Them
 
-### manifest.ts
+### manifest/
 
 **When**: Always - defines service identity and metadata.
 
@@ -61,11 +68,12 @@ my-service-startos/
 | ----------------------------------- | ----------------------------------------------- |
 | `id`, `title`, `license`, `docsUrl` | Required metadata                               |
 | `volumes`                           | Storage volumes (usually `['main']`)            |
-| `images`                            | Docker images (pre-built tag or local build)    |
-| `alerts`                            | User notifications for install/update/uninstall |
+| `images`                            | Docker images with `arch` field                 |
+| `description`                       | Locale objects from `manifest/i18n.ts`          |
+| `alerts`                            | Locale objects or `null` for lifecycle events    |
 | `dependencies`                      | Service dependencies                            |
 
-See [manifest.ts](./manifest-ts.md) for detailed configuration (images, alerts, dependencies, license/icon setup).
+See [manifest/](./manifest-ts.md) for detailed configuration (images, alerts, dependencies, license/icon setup).
 
 ### main.ts - Runtime Configuration
 
@@ -253,7 +261,8 @@ chore(hello-world): bump SDK to 0.4.0-beta.48
 ## Checklist
 
 - [ ] `.gitignore` copied from `hello-world-startos/.gitignore` (boilerplate)
-- [ ] `manifest.ts` configured with correct license and `docsUrl`
+- [ ] `manifest/index.ts` configured with correct license, `docsUrl`, and `arch` on all images
+- [ ] `manifest/i18n.ts` has translated `short` and `long` descriptions
 - [ ] `LICENSE` symlink to upstream license file
 - [ ] `icon.*` symlink to upstream icon or custom (svg preferred, max 40 KiB)
 - [ ] `assets/` directory exists (can be empty with README.md)
@@ -345,7 +354,7 @@ Once an upstream repo is identified, gather the following information. Research 
 1. Clone the hello-world-startos template into a new `[service-name]-startos/` directory (sibling to `service-packaging/`)
 2. Add the upstream project as a git submodule
 3. Work through each file in the project structure using the documentation in this guide:
-   - `manifest.ts` — fill in metadata, images, license, dependencies ([manifest-ts.md](./manifest-ts.md))
+   - `manifest/` — fill in metadata, images (with `arch`), license, dependencies, translated descriptions ([manifest-ts.md](./manifest-ts.md))
    - `main.ts` — set up daemons, health checks, volume mounts, config file generation ([main-ts.md](./main-ts.md))
    - `interfaces.ts` — expose ports and interfaces ([interfaces-ts.md](./interfaces-ts.md))
    - `init/` — generate secrets, bootstrap state on install ([init.md](./init.md))

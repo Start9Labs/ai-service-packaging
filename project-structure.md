@@ -8,20 +8,25 @@ A StartOS package follows this organizational pattern:
 my-service-startos/
 ├── assets/                 # Supplementary files (required, can be empty)
 │   └── README.md
-├── docs/                   # Optional service documentation
-│   └── instructions.md
 ├── startos/                # Primary development directory
 │   ├── actions/            # User-facing action scripts
 │   ├── fileModels/         # Type-safe config file representations
+│   ├── i18n/               # Internationalization
+│   │   ├── index.ts        # setupI18n() call (boilerplate)
+│   │   └── dictionaries/
+│   │       ├── default.ts  # English strings keyed by index
+│   │       └── translations.ts  # Translations for other locales
 │   ├── init/               # Container initialization logic
 │   ├── install/            # Version management and migrations
 │   │   └── versions/
+│   ├── manifest/           # Static service metadata
+│   │   ├── index.ts        # setupManifest() call
+│   │   └── i18n.ts         # Translated description, alerts
 │   ├── backups.ts          # Backup volumes and exclusions
 │   ├── dependencies.ts     # Service dependencies
 │   ├── index.ts            # Exports (boilerplate)
 │   ├── interfaces.ts       # Network interface definitions
 │   ├── main.ts             # Daemon runtime and health checks
-│   ├── manifest.ts         # Static service metadata
 │   ├── sdk.ts              # SDK initialization (boilerplate)
 │   └── utils.ts            # Package-specific utilities
 ├── .gitignore
@@ -71,10 +76,6 @@ Documentation template that should be customized for your specific service.
 
 Stores supplementary files and scripts needed by the service, such as configuration generators. **Required** - create with at least a README.md if empty.
 
-### docs/
-
-Optional directory for service documentation. Can include an `instructions.md` file that is displayed to users.
-
 ### startos/
 
 The primary development directory containing SDK integration files and package logic.
@@ -85,7 +86,6 @@ The primary development directory containing SDK integration files and package l
 
 | File              | Purpose                                                               |
 | ----------------- | --------------------------------------------------------------------- |
-| `manifest.ts`     | Static service metadata (ID, name, description, requirements, images) |
 | `main.ts`         | Daemon runtime configuration and health checks                        |
 | `interfaces.ts`   | Network interface definitions and port bindings                       |
 | `backups.ts`      | Backup volumes and exclusion patterns                                 |
@@ -100,8 +100,10 @@ The primary development directory containing SDK integration files and package l
 | ------------- | --------------------------------------------------------------------- |
 | `actions/`    | Custom user-facing scripts displayed as buttons in the UI             |
 | `fileModels/` | Type-safe representations of config files (.json, .yaml, .toml, etc.) |
+| `i18n/`       | Internationalization: default dictionary and translated strings       |
 | `init/`       | Container initialization logic (install, update, restart)             |
 | `install/`    | Version management and migration logic                                |
+| `manifest/`   | Service metadata (ID, name, description, images) with i18n            |
 
 ## Initialization Triggers
 

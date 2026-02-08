@@ -78,8 +78,9 @@ make install
 ## Next Steps
 
 1. Review [project structure](./project-structure.md) to understand file layout
-2. Update `manifest.ts` with your service metadata
+2. Update `startos/manifest/` with your service metadata and translations
 3. Configure `main.ts` with daemons and health checks
 4. Set up `interfaces.ts` for network exposure
-5. Add actions in `actions/` directory
-6. Test on StartOS
+5. Add i18n dictionaries in `startos/i18n/dictionaries/`
+6. Add actions in `actions/` directory
+7. Test on StartOS

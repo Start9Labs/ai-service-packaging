@@ -55,7 +55,7 @@ Example ordering (lowest to highest):
 When creating a new package:
 
 1. **Select the latest stable upstream version** - avoid prereleases (alpha, beta, rc) unless necessary
-2. **Match the Docker image tag** - the version in manifest.ts `images.*.source.dockerTag` must match the upstream version
+2. **Match the Docker image tag** - the version in `manifest/index.ts` `images.*.source.dockerTag` must match the upstream version
 3. **Match the git submodule** - if using a submodule, check out the corresponding tag
 4. **Start downstream at 0** - increment only when making wrapper-only changes
 5. **Start downstream as alpha or beta** - use `-alpha.0` or `-beta.0` for initial releases
@@ -66,7 +66,7 @@ Ensure these all match for upstream version `X.Y.Z`:
 
 - [ ] `startos/install/versions/vX.Y.Z.0.a0.ts` - version file
 - [ ] `version: 'X.Y.Z:0-alpha.0'` - in VersionInfo
-- [ ] `dockerTag: 'image:X.Y.Z'` - in manifest.ts (if using pre-built image)
+- [ ] `dockerTag: 'image:X.Y.Z'` - in `manifest/index.ts` (if using pre-built image)
 - [ ] Git submodule checked out to `vX.Y.Z` tag (if applicable)
 
 ## File Structure
@@ -100,7 +100,13 @@ import { VersionInfo, IMPOSSIBLE } from '@start9labs/start-sdk'
 
 export const v_X_Y_Z_0_a0 = VersionInfo.of({
   version: 'X.Y.Z:0-alpha.0',
-  releaseNotes: 'Initial release for StartOS',
+  releaseNotes: {
+    en_US: 'Initial release for StartOS',
+    es_ES: 'Versión inicial para StartOS',
+    de_DE: 'Erstveröffentlichung für StartOS',
+    pl_PL: 'Pierwsze wydanie dla StartOS',
+    fr_FR: 'Version initiale pour StartOS',
+  },
   migrations: {
     up: async ({ effects }) => {},
     down: IMPOSSIBLE,  // Use for initial versions or breaking changes
@@ -121,7 +127,7 @@ export const other = []  // Add previous versions here for migrations
 
 When the upstream project releases a new version:
 1. Update git submodule to new tag
-2. Update `dockerTag` in manifest.ts
+2. Update `dockerTag` in `manifest/index.ts`
 3. Create new version file with new upstream version
 4. Reset downstream to 0
 

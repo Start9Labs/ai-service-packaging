@@ -7,7 +7,7 @@ When your service depends on another StartOS service and needs to:
 - Register with the dependency (e.g. appservice registration)
 - Read the dependency's interface URL at runtime
 
-## Declaring Dependencies in manifest.ts
+## Declaring Dependencies in manifest/index.ts
 
 Dependencies require either `metadata` or `s9pk` to provide display info (title/icon). Both achieve the same result — they're two ways of providing the metadata:
 
@@ -44,6 +44,7 @@ dependencies: {
 Use `sdk.action.createTask()` to trigger an action on a dependency. The action must be exported from the dependency's package.
 
 ```typescript
+import { i18n } from './i18n'
 import { sdk } from './sdk'
 import { someAction } from 'dependency-package/startos/actions/someAction'
 
@@ -54,7 +55,7 @@ export const setDependencies = sdk.setupDependencies(async ({ effects }) => {
       value: { /* fields matching the action's input spec */ },
     },
     when: { condition: 'input-not-matches', once: false },
-    reason: 'Human-readable reason shown to user',
+    reason: i18n('Human-readable reason shown to user'),
   })
 
   return {

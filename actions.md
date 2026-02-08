@@ -3,6 +3,7 @@
 ## Action Without Input
 
 ```typescript
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { storeJson } from '../fileModels/store.json'
 
@@ -12,8 +13,8 @@ export const getAdminCredentials = sdk.Action.withoutInput(
 
   // Metadata
   async ({ effects }) => ({
-    name: 'Get Admin Credentials',
-    description: 'Retrieve admin username and password',
+    name: i18n('Get Admin Credentials'),
+    description: i18n('Retrieve admin username and password'),
     warning: null,
     allowedStatuses: 'any',  // 'any', 'only-running', 'only-stopped'
     group: null,
@@ -99,7 +100,7 @@ In `init/initializeService.ts`, prompt user to run an action:
 
 ```typescript
 await sdk.action.createOwnTask(effects, getAdminCredentials, 'critical', {
-  reason: 'Retrieve the admin password',
+  reason: i18n('Retrieve the admin password'),
 })
 ```
 
@@ -135,6 +136,7 @@ export const storeJson = FileHelper.json(
 ### 2. Create manageSmtp.ts action
 
 ```typescript
+import { i18n } from '../i18n'
 import { storeJson } from '../fileModels/store.json'
 import { sdk } from '../sdk'
 
@@ -148,8 +150,8 @@ export const manageSmtp = sdk.Action.withInput(
   'manage-smtp',
 
   async ({ effects }) => ({
-    name: 'Configure SMTP',
-    description: 'Add SMTP credentials for sending emails',
+    name: i18n('Configure SMTP'),
+    description: i18n('Add SMTP credentials for sending emails'),
     warning: null,
     allowedStatuses: 'any',
     group: null,

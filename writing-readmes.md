@@ -110,7 +110,7 @@ Use this prompt with an AI assistant to generate your README. Replace `[Service 
 > **Your task:**
 >
 > 1. Read the entire `[service-name]-startos` codebase — manifest, actions, main.ts, interfaces, backups, fileModels, install/versions, everything
-> 2. Cross-reference with the upstream docs at `docsUrl` in `/manifest/index.ts`
+> 2. Cross-reference with the upstream docs at `docsUrl` in `startos/manifest/index.ts`
 > 3. Write a README that serves as a "diff" against upstream
 >
 > **Key principle:** If something isn't in our README, users should assume upstream docs are accurate. Don't duplicate upstream documentation.
@@ -131,6 +131,7 @@ Use this prompt with an AI assistant to generate your README. Replace `[Service 
 > **End with a YAML block** for AI consumers containing: package_id, upstream_version, image, architectures, volumes, ports, dependencies, startos_managed_env_vars, actions
 >
 > **Do NOT include:**
+>
 > - Build instructions (those go in CONTRIBUTING.md)
 > - Generic descriptions of what the service does (link to upstream instead)
 > - Information that matches upstream exactly (only document differences)
@@ -143,24 +144,25 @@ Use this prompt with an AI assistant to generate your README. Replace `[Service 
 
 ### Image and Container Runtime
 
-| What to Document | Example |
-|---|---|
-| Image source | Upstream unmodified, or custom Dockerfile |
-| Architectures | x86_64, aarch64, riscv64 |
-| Entrypoint | Default or custom |
+| What to Document | Example                                   |
+| ---------------- | ----------------------------------------- |
+| Image source     | Upstream unmodified, or custom Dockerfile |
+| Architectures    | x86_64, aarch64, riscv64                  |
+| Entrypoint       | Default or custom                         |
 
 ### Volume and Data Layout
 
-| What to Document | Example |
-|---|---|
-| Volume names | `main`, `data`, `config` |
-| Mount points | `/data`, `/config` |
-| StartOS files | `store.json` for persistent settings |
-| Database | Embedded SQLite vs external |
+| What to Document | Example                              |
+| ---------------- | ------------------------------------ |
+| Volume names     | `main`, `data`, `config`             |
+| Mount points     | `/data`, `/config`                   |
+| StartOS files    | `store.json` for persistent settings |
+| Database         | Embedded SQLite vs external          |
 
 ### Installation and First-Run Flow
 
 Document if your package:
+
 - Skips an upstream setup wizard
 - Auto-generates credentials
 - Pre-configures settings
@@ -168,13 +170,14 @@ Document if your package:
 
 ### Configuration Management
 
-| StartOS-Managed | Upstream-Managed |
-|---|---|
+| StartOS-Managed                          | Upstream-Managed                              |
+| ---------------------------------------- | --------------------------------------------- |
 | Settings controlled via actions/env vars | Settings configurable via app's own UI/config |
 
 ### Actions
 
 For each action:
+
 - **Name**: What users see
 - **Purpose**: What it does
 - **Visibility**: Visible, hidden, or conditional
@@ -185,6 +188,7 @@ For each action:
 ### Network Interfaces
 
 For each interface:
+
 - Port number
 - Protocol (HTTP, SSH, etc.)
 - Purpose (UI, API, etc.)
@@ -205,6 +209,7 @@ For each interface:
 ### Limitations
 
 Be explicit about:
+
 - Features that don't work or work differently
 - Unavailable configuration options
 - Unsupported dependencies

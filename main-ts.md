@@ -4,6 +4,7 @@
 
 ```typescript
 import { writeFile } from 'node:fs/promises'
+import { i18n } from './i18n'
 import { sdk } from './sdk'
 import { storeJson } from './fileModels/store.json'
 
@@ -50,11 +51,11 @@ export const main = sdk.setupMain(async ({ effects }) => {
       subcontainer: appSub,
       exec: { command: ['./start.sh'] },
       ready: {
-        display: 'Web Interface',
+        display: i18n('Web Interface'),
         fn: () =>
           sdk.healthCheck.checkPortListening(effects, 8080, {
-            successMessage: 'Service is ready',
-            errorMessage: 'Service is not ready',
+            successMessage: i18n('Service is ready'),
+            errorMessage: i18n('Service is not ready'),
           }),
       },
       requires: ['migrate'],
@@ -200,13 +201,15 @@ Use a custom command array when you need to bypass the entrypoint entirely:
 
 ## Health Checks
 
+All user-facing strings must be wrapped with `i18n()`:
+
 ```typescript
 ready: {
-  display: 'Web Interface',  // Shown in UI
+  display: i18n('Web Interface'),  // Shown in UI
   fn: () =>
     sdk.healthCheck.checkPortListening(effects, 8080, {
-      successMessage: 'Service is ready',
-      errorMessage: 'Service is not ready',
+      successMessage: i18n('Service is ready'),
+      errorMessage: i18n('Service is not ready'),
     }),
 },
 ```

@@ -9,6 +9,7 @@ See `hello-world-startos/startos/interfaces.ts` for the basic pattern.
 Expose multiple paths (e.g., web UI and admin panel):
 
 ```typescript
+import { i18n } from './i18n'
 import { sdk } from './sdk'
 
 const uiPort = 8080
@@ -20,9 +21,9 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
   })
 
   const ui = sdk.createInterface(effects, {
-    name: 'Web UI',
+    name: i18n('Web UI'),
     id: 'ui',
-    description: 'The web interface',
+    description: i18n('The web interface'),
     type: 'ui',
     masked: false,
     schemeOverride: null,
@@ -32,9 +33,9 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
   })
 
   const admin = sdk.createInterface(effects, {
-    name: 'Admin Panel',
+    name: i18n('Admin Panel'),
     id: 'admin',
-    description: 'Admin interface',
+    description: i18n('Admin interface'),
     type: 'ui',
     masked: false,
     schemeOverride: null,
@@ -52,9 +53,9 @@ export const setInterfaces = sdk.setupInterfaces(async ({ effects }) => {
 
 ```typescript
 sdk.createInterface(effects, {
-  name: 'Display Name',           // Shown in UI
+  name: i18n('Display Name'),     // Shown in UI (wrap with i18n)
   id: 'unique-id',                // Used in sdk.serviceInterface.getOwn()
-  description: 'Description',     // Shown in UI
+  description: i18n('Description'), // Shown in UI (wrap with i18n)
   type: 'ui',                     // 'ui' or 'api'
   masked: false,                  // Hide from discovery?
   schemeOverride: null,           // Force 'https' or 'http'?

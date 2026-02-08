@@ -39,7 +39,7 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
 
   // Runs on both install and restore
   await sdk.action.createOwnTask(effects, getAdminPassword, 'critical', {
-    reason: 'Retrieve the admin password',
+    reason: i18n('Retrieve the admin password'),
   })
 })
 ```
@@ -71,6 +71,7 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
 ```typescript
 // init/initializeService.ts
 import { utils } from '@start9labs/start-sdk'
+import { i18n } from '../i18n'
 import { sdk } from '../sdk'
 import { storeJson } from '../fileModels/store.json'
 import { getAdminPassword } from '../actions/getAdminPassword'
@@ -87,7 +88,7 @@ export const initializeService = sdk.setupOnInit(async (effects, kind) => {
 
   // Create task prompting user to retrieve password
   await sdk.action.createOwnTask(effects, getAdminPassword, 'critical', {
-    reason: 'Retrieve the admin password',
+    reason: i18n('Retrieve the admin password'),
   })
 })
 ```

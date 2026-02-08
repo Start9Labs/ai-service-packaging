@@ -16,23 +16,23 @@ The `s9pk.mk` file contains all the common build logic shared across StartOS pac
 
 ### What It Provides
 
-| Target | Description |
-|--------|-------------|
-| `make` or `make all` | Build for all architectures (default) |
-| `make x86` | Build for x86_64 only |
-| `make arm` | Build for aarch64 only |
-| `make riscv` | Build for riscv64 only |
-| `make universal` | Build a single package containing all architectures |
-| `make install` | Install the most recent .s9pk to your StartOS server |
-| `make clean` | Remove build artifacts |
+| Target               | Description                                          |
+| -------------------- | ---------------------------------------------------- |
+| `make` or `make all` | Build for all architectures (default)                |
+| `make x86`           | Build for x86_64 only                                |
+| `make arm`           | Build for aarch64 only                               |
+| `make riscv`         | Build for riscv64 only                               |
+| `make universal`     | Build a single package containing all architectures  |
+| `make install`       | Install the most recent .s9pk to your StartOS server |
+| `make clean`         | Remove build artifacts                               |
 
 ### Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ALL_ARCHES` | `x86 arm riscv` | Architectures to build by default |
-| `ALL_TARGETS` | `all_arches` | Default build target |
-| `VARIANT` | (unset) | Optional variant suffix for package name |
+| Variable  | Default         | Description                              |
+| --------- | --------------- | ---------------------------------------- |
+| `ARCHES`  | `x86 arm riscv` | Architectures to build by default        |
+| `TARGETS` | `arches`        | Default build target                     |
+| `VARIANT` | (unset)         | Optional variant suffix for package name |
 
 ## Makefile
 
@@ -47,8 +47,8 @@ include s9pk.mk
 For services with variants (e.g., GPU support), extend the Makefile:
 
 ```makefile
-ALL_TARGETS := generic rocm
-ALL_ARCHES := x86 arm
+TARGETS := generic rocm
+ARCHES := x86 arm
 
 include s9pk.mk
 
@@ -58,7 +58,7 @@ generic:
 	$(MAKE) all_arches VARIANT=generic
 
 rocm:
-	ROCM=1 $(MAKE) all_arches VARIANT=rocm ALL_ARCHES=x86_64
+	ROCM=1 $(MAKE) all_arches VARIANT=rocm ARCHES=x86_64
 ```
 
 This produces packages named `myservice_generic_x86_64.s9pk` and `myservice_rocm_x86_64.s9pk`.
@@ -68,8 +68,8 @@ This produces packages named `myservice_generic_x86_64.s9pk` and `myservice_rocm
 Override variables before including s9pk.mk:
 
 ```makefile
-# Build only for x86 and arm by default
-ALL_ARCHES := x86 arm
+# Build only for x86 and arm
+ARCHES := x86 arm
 
 include s9pk.mk
 ```
@@ -94,6 +94,7 @@ make clean
 ## Prerequisites
 
 The build system checks for:
+
 - `start-cli` - StartOS CLI tool
 - `npm` - Node.js package manager
 - `~/.startos/developer.key.pem` - Developer key (auto-initialized if missing)

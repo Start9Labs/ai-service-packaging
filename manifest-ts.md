@@ -1,29 +1,59 @@
-# manifest.ts
+# manifest/
 
-The manifest defines service identity, metadata, and build configuration.
+The manifest defines service identity, metadata, and build configuration. It lives in `startos/manifest/` as two files:
+
+- `index.ts` — the `setupManifest()` call
+- `i18n.ts` — translated strings for `description` and `alerts`
 
 **When**: Always - defines service identity and metadata.
 
-## Basic Structure
+## File: manifest/i18n.ts
+
+Locale objects for user-facing manifest strings. Each is a record of locale → string:
 
 ```typescript
-import { setupManifest } from "@start9labs/start-sdk";
+export const short = {
+  en_US: 'Brief description (one line)',
+  es_ES: 'Descripción breve (una línea)',
+  de_DE: 'Kurze Beschreibung (eine Zeile)',
+  pl_PL: 'Krótki opis (jedna linia)',
+  fr_FR: 'Description brève (une ligne)',
+}
+
+export const long = {
+  en_US:
+    'Longer description explaining what the service does and its key features.',
+  es_ES:
+    'Descripción más larga que explica qué hace el servicio y sus características principales.',
+  de_DE:
+    'Längere Beschreibung, die erklärt, was der Dienst tut und seine wichtigsten Funktionen.',
+  pl_PL:
+    'Dłuższy opis wyjaśniający, co robi usługa i jej kluczowe funkcje.',
+  fr_FR:
+    'Description plus longue expliquant ce que fait le service et ses fonctionnalités principales.',
+}
+
+// Export alertInstall, alertUpdate, etc. as needed (or null for no alert)
+```
+
+## File: manifest/index.ts
+
+```typescript
+import { setupManifest } from '@start9labs/start-sdk'
+import { short, long } from './i18n'
 
 export const manifest = setupManifest({
-  id: "my-service",
-  title: "My Service",
-  license: "MIT",
-  wrapperRepo: "https://github.com/Start9Labs/my-service-startos",
-  upstreamRepo: "https://github.com/original/my-service",
-  supportSite: "https://docs.example.com/",
-  marketingSite: "https://example.com/",
+  id: 'my-service',
+  title: 'My Service',
+  license: 'MIT',
+  wrapperRepo: 'https://github.com/Start9Labs/my-service-startos',
+  upstreamRepo: 'https://github.com/original/my-service',
+  supportSite: 'https://docs.example.com/',
+  marketingSite: 'https://example.com/',
   donationUrl: null,
-  docsUrl: "https://docs.example.com/guides",
-  description: {
-    short: "Brief description (one line)",
-    long: "Longer description explaining what the service does and its key features.",
-  },
-  volumes: ["main"],
+  docsUrl: 'https://docs.example.com/guides',
+  description: { short, long },
+  volumes: ['main'],
   images: {
     /* see below */
   },
@@ -36,7 +66,7 @@ export const manifest = setupManifest({
     stop: null,
   },
   dependencies: {},
-});
+})
 ```
 
 ## Required Fields
@@ -51,12 +81,12 @@ export const manifest = setupManifest({
 | `supportSite`       | URL for user support                                   |
 | `marketingSite`     | URL for the project's main website                     |
 | `donationUrl`       | Donation URL or `null`                                 |
-| `docsUrl`           | URL to documentation                                   |
-| `description.short` | One-line description                                   |
-| `description.long`  | Extended description                                   |
+| `docsUrl`           | URL to **upstream** documentation (not our wrapper docs) |
+| `description.short` | Locale object (see `manifest/i18n.ts`)                 |
+| `description.long`  | Locale object (see `manifest/i18n.ts`)                 |
 | `volumes`           | Storage volumes (usually `['main']`)                   |
-| `images`            | Docker image configuration                             |
-| `alerts`            | User notifications for lifecycle events                |
+| `images`            | Docker image configuration (including `arch`)          |
+| `alerts`            | User notifications for lifecycle events (locale objects or `null`) |
 | `dependencies`      | Service dependencies                                   |
 
 ## License
@@ -77,6 +107,8 @@ ln -sf upstream-project/logo.svg icon.svg
 
 ## Images Configuration
 
+Each image can include an `arch` field specifying supported architectures. It defaults to `['x86_64', 'aarch64', 'riscv64']` if omitted, but it is good practice to list architectures explicitly for transparency. The `arch` field must align with the `ARCHES` variable in the Makefile.
+
 ### Pre-built Docker Tag
 
 Use when an image exists on Docker Hub or another registry:
@@ -87,6 +119,7 @@ images: {
     source: {
       dockerTag: 'nginx:1.25',
     },
+    arch: ['x86_64', 'aarch64'],
   },
 },
 ```
@@ -102,6 +135,7 @@ images: {
     source: {
       dockerBuild: {},
     },
+    arch: ['x86_64', 'aarch64'],
   },
 },
 ```
@@ -116,6 +150,7 @@ images: {
         workdir: './upstream-project',
       },
     },
+    arch: ['x86_64', 'aarch64'],
   },
 },
 ```
@@ -131,6 +166,7 @@ images: {
         dockerfile: './upstream-project/sync-server.Dockerfile',
       },
     },
+    arch: ['x86_64', 'aarch64'],
   },
 },
 ```
@@ -140,6 +176,18 @@ images: {
 ```dockerfile
 COPY upstream-project/ .
 ```
+
+### Architecture Support
+
+The `arch` field accepts these values:
+
+| Value       | Architecture |
+|-------------|-------------|
+| `x86_64`    | Intel/AMD 64-bit |
+| `aarch64`   | ARM 64-bit |
+| `riscv64`   | RISC-V 64-bit |
+
+Most services support `['x86_64', 'aarch64']`. Only add `riscv64` if the upstream image actually supports it. The `ARCHES` variable in the Makefile must align (see [Makefile](./makefile.md)).
 
 ### GPU/Hardware Acceleration
 
@@ -151,6 +199,7 @@ images: {
     source: {
       dockerTag: 'ollama/ollama:0.13.5',
     },
+    arch: ['x86_64', 'aarch64'],
     nvidiaContainer: true,  // Enable NVIDIA GPU support
   },
 },
@@ -159,39 +208,51 @@ hardwareAcceleration: true,  // Top-level flag
 
 ### Multiple Images
 
-Services can define multiple images:
+Services can define multiple images. Each image needs its own `arch` field:
 
 ```typescript
 images: {
   app: {
     source: { dockerTag: 'myapp:latest' },
+    arch: ['x86_64', 'aarch64'],
   },
   db: {
     source: { dockerTag: 'postgres:15' },
+    arch: ['x86_64', 'aarch64'],
   },
 },
 ```
 
 ## Alerts
 
-Display messages to users during lifecycle events:
+Display messages to users during lifecycle events. Use locale objects for translated alerts, or `null` for no alert:
 
 ```typescript
+// In manifest/i18n.ts
+export const alertInstall = {
+  en_US: 'After installation, run the "Get Admin Credentials" action to retrieve your password.',
+  es_ES: 'Después de la instalación, ejecute la acción "Obtener credenciales de administrador" para recuperar su contraseña.',
+  de_DE: 'Führen Sie nach der Installation die Aktion "Admin-Zugangsdaten abrufen" aus, um Ihr Passwort abzurufen.',
+  pl_PL: 'Po instalacji uruchom akcję "Pobierz dane administratora", aby uzyskać hasło.',
+  fr_FR: "Après l'installation, exécutez l'action « Obtenir les identifiants admin » pour récupérer votre mot de passe.",
+}
+
+// In manifest/index.ts
+import { short, long, alertInstall } from './i18n'
+
 alerts: {
-  install: 'After installation, run the "Get Admin Credentials" action to retrieve your password.',
-  update: 'This update includes breaking changes. Backup your data first.',
-  uninstall: 'All data will be permanently deleted.',
+  install: alertInstall,
+  update: null,
+  uninstall: null,
   restore: null,
   start: null,
   stop: null,
 },
 ```
 
-Set to `null` for no alert.
-
 ## Dependencies
 
-Declare dependencies on other StartOS services:
+Declare dependencies on other StartOS services. Note: dependency `description` is a plain string (NOT a locale object):
 
 ```typescript
 dependencies: {
